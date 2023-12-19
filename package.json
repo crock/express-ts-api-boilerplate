@@ -1,0 +1,56 @@
+{
+    "name": "express-boilerplate",
+    "private": true,
+    "author": {
+        "name": "Alex Crocker",
+        "email": "alex@croc.io"
+    },
+    "scripts": {
+        "start": "cross-env NODE_ENV=production node dist/index.js",
+        "dev": "cross-env NODE_ENV=development nodemon",
+        "build": "tsc",
+        "docker:up": "docker-compose up -d",
+        "docker:down": "docker-compose down",
+        "test-migrate": "npm run docker:up && dotenv -e .env.test -- prisma migrate deploy",
+        "test": "cross-env NODE_ENV=test jest"
+    },
+    "dependencies": {
+        "apicache": "^1.6.3",
+        "axios": "^1.6.2",
+        "bcrypt": "^5.1.1",
+        "cors": "^2.8.5",
+        "crypto-js": "^4.2.0",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "jsonwebtoken": "^9.0.2",
+        "lodash": "^4.17.21",
+        "moment": "^2.29.4",
+        "node-cache": "^5.1.2",
+        "node-cron": "^3.0.3",
+        "pino": "^8.17.1",
+        "pino-http": "^8.6.0",
+        "pino-pretty": "^10.3.0",
+        "prisma": "^5.7.0",
+        "socket.io": "^4.7.2",
+        "uuid": "^9.0.1"
+    },
+    "devDependencies": {
+        "@types/apicache": "^1.6.1",
+        "@types/bcrypt": "^5.0.0",
+        "@types/crypto-js": "^4.1.1",
+        "@types/express": "^4.17.14",
+        "@types/http-errors": "^1.8.2",
+        "@types/jest": "^29.2.0",
+        "@types/jsonwebtoken": "^8.5.9",
+        "@types/lodash": "^4.14.186",
+        "@types/node": "^18.11.0",
+        "@types/uuid": "^8.3.4",
+        "cross-env": "^7.0.3",
+        "dotenv-cli": "^6.0.0",
+        "jest": "^29.2.1",
+        "nodemon": "^2.0.20",
+        "ts-jest": "^29.0.3",
+        "ts-node": "^10.9.1",
+        "typescript": "^4.8.4"
+    }
+}

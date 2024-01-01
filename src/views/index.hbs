@@ -10,6 +10,11 @@
 <body>
   {{ message }}
 
-  <p>Click <a href="/auth/login">here</a> to login with Discord.</p>
+  {{#if loggedIn}}
+    <p>You are logged in with Discord. <a href="/auth/logout">Logout?</a></p>
+    <p><a href="/auth/dashboard">Go to dashboard</a></p>
+  {{else}}
+    <p>Click <a href="/auth/login">here</a> to login with Discord.</p>
+  {{/if}}
 </body>
 </html>

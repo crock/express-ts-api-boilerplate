@@ -66,7 +66,7 @@ app.use(session({
 }))
 
 app.get('/', (req: Request, res: Response) => { 
-    res.render('index', { title: 'Hey', message: 'Hello there!' })
+    res.render('index', { title: 'Hey', message: 'Hello there!', loggedIn: req.session.user })
 });
     
 // Register routes

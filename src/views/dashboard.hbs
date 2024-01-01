@@ -7,5 +7,16 @@
 </head>
 <body>
   Welcome to your dashboard. Click <a href="/auth/logout">here</a> to logout.
+
+  {{#if hasApiKey}}
+    <p><strong>Api Key:</strong> <code>{{ apiKey }}</code></p>
+    <form action="/auth/api-access/revoke" method="post">
+      <input type="submit" value="Revoke API Access" />
+    </form>
+  {{else}}
+    <form action="/auth/api-access/request" method="post">
+      <input type="submit" value="Request API Access" />
+    </form>
+  {{/if}}
 </body>
 </html>

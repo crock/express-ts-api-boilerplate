@@ -11,5 +11,7 @@ router.get('/logout', authController.logout)
 router.get('/callback', authController.callback)
 router.get('/profile', isAuthenticated, authController.fetchProfile)
 router.get('/dashboard', isAuthenticated, authController.viewDashboard)
+router.post('/api-access/request', isAuthenticated, authController.requestApiAccess)
+router.post('/api-access/revoke', isAuthenticated, authController.revokeApiAccess)
 
 export default router;

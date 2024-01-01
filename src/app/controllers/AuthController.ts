@@ -7,8 +7,17 @@ import { DiscordService } from '../services/social'
 
 class AuthController {
 
-    public viewDashboard(req: Request, res: Response) {
-        res.render('dashboard', { title: 'Dashboard' })
+    public async viewDashboard(req: Request, res: Response) {
+
+        const user = await prisma.user.findUnique({
+            where: {
+                id: req.session.user
+            }
+        })
+
+        const { apiKey } = user
+
+        res.render('dashboard', { title: 'Dashboard', hasApiKey: !!apiKey, apiKey })
     }
     
     public async fetchProfile(req: Request, res: Response) {
@@ -117,6 +126,36 @@ class AuthController {
                 res.redirect('/')
             })
         })
+    }
+
+    public async requestApiAccess(req: Request, res: Response) {
+        
+        const apiKey = generateShortSlug(15)
+        
+        await prisma.user.update({
+            where: {
+                id: req.session.user
+            },
+            data: {
+                apiKey
+            }
+        })
+
+        res.render('dashboard', { title: 'Dashboard', hasApiKey: true, apiKey })
+    }
+
+    public async revokeApiAccess(req: Request, res: Response) {
+        
+        await prisma.user.update({
+            where: {
+                id: req.session.user
+            },
+            data: {
+                apiKey: null
+            }
+        })
+
+        res.render('dashboard', { title: 'Dashboard', hasApiKey: false })
     }
 }
 

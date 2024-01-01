@@ -15,7 +15,7 @@ export const appUrl = process.env.NODE_ENV === "development"
     ? 'http://localhost:3000'
     : `https://${primaryDomain}`
 
-export const storagePath = path.join(process.cwd(), 'storage')
+export const storagePath = path.join(__dirname, '..', '..', 'storage')
 
 export const lowercaseAlphabet = "abcdefghijklmnopqrstuvwxyz";
 export const uppercaseAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

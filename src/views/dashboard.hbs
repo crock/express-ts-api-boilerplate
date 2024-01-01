@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ title }}</title>
+
+  <link rel="stylesheet" href="/assets/css/global.css">
 </head>
 <body>
   Welcome to your dashboard. Click <a href="/auth/logout">here</a> to logout.
@@ -11,11 +13,11 @@
   {{#if hasApiKey}}
     <p><strong>Api Key:</strong> <code>{{ apiKey }}</code></p>
     <form action="/auth/api-access/revoke" method="post">
-      <input type="submit" value="Revoke API Access" />
+      <input class="px-4 py-2 bg-red-500 hover:bg-red-400 font-semibold text-gray-50 rounded-sm shadow-sm" type="submit" value="Revoke API Access" />
     </form>
   {{else}}
     <form action="/auth/api-access/request" method="post">
-      <input type="submit" value="Request API Access" />
+      <input class="px-4 py-2 bg-primary hover:bg-primary-light font-semibold text-gray-50 rounded-sm shadow-sm" type="submit" value="Enable API Access" />
     </form>
   {{/if}}
 </body>

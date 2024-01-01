@@ -27,9 +27,17 @@ const checkJwt = async (req: Request, res: Response, next: NextFunction) => {
         res.status(401).send('Unauthorized')
     }
 
-    delete user.password
+    const { email, username, id, role, discordUserId, createdAt, updatedAt } = user
 
-    req.user = user
+    req.user = {
+        id,
+        discordUserId,
+        email, 
+        username,
+        role, 
+        createdAt, 
+        updatedAt
+    }
     next()
 }
 

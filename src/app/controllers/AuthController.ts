@@ -1,10 +1,15 @@
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { generateShortSlug, config, prisma, approvedDomains, getClientInfo } from '../../utils/';
 import bcrypt from 'bcrypt'
 import moment from 'moment'
 import jsonwebtoken, { JwtPayload } from 'jsonwebtoken'
+import { DiscordService } from '../services/social'
 
 class AuthController {
+
+    public viewDashboard(req: Request, res: Response) {
+        res.render('dashboard', { title: 'Dashboard' })
+    }
     
     public async fetchProfile(req: Request, res: Response) {
         
@@ -18,120 +23,100 @@ class AuthController {
             return res.status(400).send('User not found')
         }
         
-        delete user.password
+        const { email, username, id, discordUserId, role, createdAt, updatedAt } = user
         
-        return res.status(200).json(user)
-    }
-
-    public async login(req: Request, res: Response) {
-
-        const { username, email, password } = req.body
-
-        let user = await prisma.user.findUnique({
-            where: {
-                email,
-                username
-            }
-        })
-
-        if (!user) {
-            return res.status(400).send('User not found')
-        }
-
-        const passwordMatch = await bcrypt.compare(password, user.password)
-
-        if (!passwordMatch) {
-            return res.status(400).send('Incorrect password')
-        }
-
-        delete user.password
-
-        const exp = moment().add(1, 'week').unix()
-
-        const { name, version } = getClientInfo(req)
- 
-        if (!approvedDomains.includes(name)) {
-            return res.status(401).send('Client not approved')
-        }
-        
-        const payload = {
-            sub: user.id,
-            exp,
-            aud: name,
-        }
-
-        const token = jsonwebtoken.sign(payload, config.JWT_SECRET)
-
-        return res.status(200).send(token)
-    }
-
-    // check if user is logged in
-    public async check(req: Request, res: Response) {
-        const authHeader = req.headers.authorization
-        const token = authHeader && authHeader.split(' ')[1]
-
-        if (!token) {
-            return res.status(401).send('Unauthorized')
-        }
-
-        const decoded = jsonwebtoken.verify(token, config.JWT_SECRET) as JwtPayload
-
-        let user = await prisma.user.findUnique({
-            where: {
-                id: parseInt(decoded.sub.toString())
-            }
-        })
-
-        if (!user) {
-            return res.status(401).send('Unauthorized')
-        }
-
-        const { exp, aud } = decoded as JwtPayload
-
-        if (!exp) {
-            return res.status(401).send('Unauthorized')
-        }
-
-        const { name, version } = getClientInfo(req)
-
-        const expired = moment().isAfter(moment.unix(exp))
-
         return res.status(200).json({
-            loggedIn: !expired,
-            clientInfo: {
-                name,
-                version
-            }
+            id,
+            discordUserId,
+            email, 
+            username,
+            role, 
+            createdAt, 
+            updatedAt
         })
     }
 
-    public async register(req: Request, res: Response) {
-        const { username, email, password, confirmPassword, confirmEmail, ipAddress } = req.body
+    public login(req: Request, res: Response) {
 
-        if (password !== confirmPassword) {
-            return res.status(400).send('Passwords do not match')
-        }
+        const ds = new DiscordService()
+        
+        res.redirect(ds.getAuthorizationUrl())
+    }
 
-        if (email !== confirmEmail) {
-            return res.status(400).send('Emails do not match')
-        }
-
-        const encryptedPassword = await bcrypt.hash(password, 10)
-
-        const generatedUsername = email.split('@')[0] + generateShortSlug(5)
-
-        let user = await prisma.user.create({
-            data: {
-                email,
-                username: username || generatedUsername,
-                password: encryptedPassword,
-                ipAddress
+    public async callback(req: Request, res: Response, next: NextFunction) {
+            
+            const { code } = req.query
+            
+            if (!code) {
+                return res.status(400).send('Missing code parameter')
             }
+
+            const ds = new DiscordService()
+            
+            const tokenResponse = await ds.getAccessToken(code.toString())
+            
+            const userInfoResponse = await ds.getUserInfo(tokenResponse.access_token)
+            
+            if (!userInfoResponse.email) {
+                return res.status(400).send('Missing email')
+            }
+            
+            let user = await prisma.user.findUnique({
+                where: {
+                    email: userInfoResponse.email
+                }
+            })
+
+            const updateData = {
+                ipAddress: req.ip,
+                discordUserId: userInfoResponse.id,
+                discordAccessToken: tokenResponse.access_token,
+                discordRefreshToken: tokenResponse.refresh_token,
+                discordTokenExpiresAt: moment().add(tokenResponse.expires_in, 'seconds').toDate()
+            }
+            
+            if (!user) {
+                user = await prisma.user.upsert({
+                    where: {
+                        email: userInfoResponse.email
+                    },
+                    create: {
+                        email: userInfoResponse.email,
+                        ...updateData
+                    },
+                    update: updateData
+                })
+            }
+
+            req.user = user
+            
+            req.session.regenerate(function (err) {
+                if (err) next(err)
+
+                req.session.user = user.id
+
+                req.session.save(function (err) {
+                    if (err) next(err)
+
+                    res.redirect('/auth/dashboard')
+                })
+            })
+    }
+
+    public logout(req: Request, res: Response, next: NextFunction) {
+
+        req.user = null
+        req.session.user = null
+
+        req.session.save(function (err) {
+            if (err) next(err)
+            
+            req.session.regenerate(function (err) {
+                if (err) next(err)
+
+                res.redirect('/')
+            })
         })
-
-        delete user.password
-
-        return res.status(200).json(user)
     }
 }
 

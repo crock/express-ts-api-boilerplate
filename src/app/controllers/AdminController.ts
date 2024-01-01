@@ -30,9 +30,19 @@ class AdminController {
                     role
                 }
             })
-    
-            res.status(200).json({
-                ...updatedUser,
+
+            const { email, username, id, discordUserId, createdAt, updatedAt } = updatedUser
+        
+            return res.status(200).json({
+                user: {
+                    id,
+                    discordUserId,
+                    email, 
+                    username,
+                    role, 
+                    createdAt, 
+                    updatedAt
+                },
                 updated: true
             })
     }
@@ -76,10 +86,18 @@ class AdminController {
             }
         })
 
-        delete updatedUser.password
-
-        res.status(200).json({
-            ...updatedUser,
+        const { email, id, role, discordUserId, createdAt, updatedAt } = updatedUser
+        
+        return res.status(200).json({
+            user: {
+                id,
+                discordUserId,
+                email, 
+                username,
+                role, 
+                createdAt, 
+                updatedAt
+            },
             updated: true
         })
     }

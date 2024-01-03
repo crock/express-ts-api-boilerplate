@@ -107,7 +107,7 @@ class AuthController {
                 req.session.save(function (err) {
                     if (err) next(err)
 
-                    res.redirect('/auth/dashboard')
+                    res.redirect('/dashboard')
                 })
             })
     }

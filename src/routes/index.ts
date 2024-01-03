@@ -1,14 +1,21 @@
-import v1 from './v1/'
-import { Router } from 'express';
+import { Router } from 'express'
+import versions from './api'
+import views from './views'
 
 interface IRoutes {
-    [key: string]: {
+    api: {
+        [key: string]: {
+            [key: string]: Router
+        }
+    },
+    views: {
         [key: string]: Router
     }
 }
 
 const routes: IRoutes = {
-    v1
+    api: {...versions},
+    views: {...views}
 }
 
 export default routes

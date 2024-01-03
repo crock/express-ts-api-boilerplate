@@ -70,17 +70,33 @@ app.get('/', (req: Request, res: Response) => {
 });
     
 // Register routes
-const routeVersions = Object.keys(routes)
+const apiRouteVersions = Object.keys(routes.api)
 
-routeVersions.forEach(version => {
-    const routeSections = Object.keys(routes[version])
+// sort routes by version, starting with the newest
+const versionsSorted = apiRouteVersions.sort((a, b) => {
+    if (a === 'v1') {
+        return 1
+    }
+    if (b === 'v1') {
+        return -1
+    }
+
+    return 0
+})
+
+apiRouteVersions.forEach(version => {
+    const routeSections = Object.keys(routes.api[version])
     routeSections.forEach(section => {
-        if (version === 'v1') {
-            app.use(`/${section}`, routes[version][section])
+        if (version === versionsSorted[0]) {
+            app.use(`/${section}`, routes.api[version][section])
         }
-        app.use(`/${version}/${section}`, routes[version][section])
+        app.use(`/${version}/${section}`, routes.api[version][section])
     })
 })
+
+for (const view in routes.views) {
+    app.use('/', routes.views[view])
+}
 
 // Register custom events
 fs.readdirSync(`${__dirname}/events`).forEach((file) => {

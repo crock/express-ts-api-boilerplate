@@ -1,8 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
-import { generateShortSlug, config, prisma, approvedDomains, getClientInfo } from '../../utils/';
-import bcrypt from 'bcrypt'
+import { generateShortSlug, prisma } from '../../utils/';
 import moment from 'moment'
-import jsonwebtoken, { JwtPayload } from 'jsonwebtoken'
 import { DiscordService } from '../services/social'
 
 class AuthController {
@@ -141,7 +139,7 @@ class AuthController {
             }
         })
 
-        res.render('dashboard', { title: 'Dashboard', hasApiKey: true, apiKey })
+        res.redirect('/dashboard')
     }
 
     public async revokeApiAccess(req: Request, res: Response) {
@@ -155,7 +153,7 @@ class AuthController {
             }
         })
 
-        res.render('dashboard', { title: 'Dashboard', hasApiKey: false })
+        res.redirect('/dashboard')
     }
 }
 
